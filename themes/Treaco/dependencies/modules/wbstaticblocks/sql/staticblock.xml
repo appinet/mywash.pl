@@ -1,0 +1,295 @@
+<wb_static_blocks>
+<!-- static block configuration -->
+    <block>
+        <id_wbstaticblock>1</id_wbstaticblock>
+        <identify>wb_Topleft</identify>
+        <hook_position>displayNav1</hook_position>
+        <name_module></name_module>
+        <hook_module></hook_module>
+        <wborder>0</wborder>
+        <insert_module>0</insert_module>
+        <active>0</active>
+        <showhook>1</showhook>
+    </block>
+    <block>
+        <id_wbstaticblock>2</id_wbstaticblock>
+        <identify>wb_Menu</identify>
+        <hook_position>displayNavFullWidth</hook_position>
+        <name_module></name_module>
+        <hook_module></hook_module>
+        <wborder>0</wborder>
+        <insert_module>0</insert_module>
+        <active>0</active>
+        <showhook>1</showhook>
+    </block>
+    <block>
+        <id_wbstaticblock>3</id_wbstaticblock>
+        <identify>wb_Services</identify>
+        <hook_position>displayHome</hook_position>
+        <name_module></name_module>
+        <hook_module></hook_module>
+        <wborder>0</wborder>
+        <insert_module>0</insert_module>
+        <active>0</active>
+        <showhook>1</showhook>
+    </block>
+    <block>
+        <id_wbstaticblock>4</id_wbstaticblock>
+        <identify>Wb_Testimonial</identify>
+        <hook_position>displayHomeBlock</hook_position>
+        <name_module></name_module>
+        <hook_module></hook_module>
+        <wborder>0</wborder>
+        <insert_module>0</insert_module>
+        <active>0</active>
+        <showhook>1</showhook>
+    </block>
+    <block>
+        <id_wbstaticblock>5</id_wbstaticblock>
+        <identify>foot_Tag</identify>
+        <hook_position>displayTopcolumn</hook_position>
+        <name_module></name_module>
+        <hook_module></hook_module>
+        <wborder>0</wborder>
+        <insert_module>0</insert_module>
+        <active>0</active>
+        <showhook>1</showhook>
+    </block>
+    <block>
+        <id_wbstaticblock>6</id_wbstaticblock>
+        <identify>foot_payment</identify>
+        <hook_position>displayFooterAfter</hook_position>
+        <name_module></name_module>
+        <hook_module></hook_module>
+        <wborder>0</wborder>
+        <insert_module>0</insert_module>
+        <active>0</active>
+        <showhook>1</showhook>
+    </block>
+<!-- block lang configuration -->
+        <block_lang>
+        <id_wbstaticblock>1</id_wbstaticblock>
+        <id_lang>1</id_lang>
+        <title>Wb Top Left</title>
+        <description>
+             <![CDATA[<ul>
+<li><span>Get 30% Off On Selected Items</span></li>
+</ul>]]>
+        </description>
+        </block_lang>
+        <block_lang>
+        <id_wbstaticblock>2</id_wbstaticblock>
+        <id_lang>1</id_lang>
+        <title>Wb Menu</title>
+        <description>
+             <![CDATA[<div class="rightmenu col-xs-12 col-sm-8 col-md-8 col-lg-8 col-xl-8 text-xs-left hidden-md-down">
+<ul class="statmenu hidden-sm-down">
+<li><a href="contact-us">contact us</a></li>
+<li><a href="new-products">latest</a></li>
+<li><a href="sitemap">sitemap</a></li>
+<li><a href="prices-drop">special</a></li>
+<li><a href="best-sales">bestseller</a></li>
+</ul>
+</div>]]>
+        </description>
+    </block_lang>
+        <block_lang>
+        <id_wbstaticblock>3</id_wbstaticblock>
+        <id_lang>1</id_lang>
+        <title>Wb Services</title>
+        <description>
+             <![CDATA[<div class="container">
+<div class="h-ser">
+<div class="row ser-mbt deliveryinfo">
+<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 ses">
+<ul>
+<li class="ser-svg"><svg width="41px" height="40px"><use xlink:href="#suprt"></use></svg></li>
+<li class="ser-t">
+<h4>24/7 free support</h4>
+<p>Passage of Lorem Ipsum</p>
+</li>
+</ul>
+</div>
+<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 ses">
+<ul>
+<li class="ser-svg"><svg width="41px" height="40px"><use xlink:href="#safe"></use></svg></li>
+<li class="ser-t">
+<h4>secure payment</h4>
+<p>Passage of Lorem Ipsum</p>
+</li>
+</ul>
+</div>
+<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12  ses">
+<ul>
+<li class="ser-svg"><svg width="50px" height="40px"><use xlink:href="#gift"></use></svg></li>
+<li class="ser-t">
+<h4>special gift cards</h4>
+<p>Passage of Lorem Ipsum</p>
+</li>
+</ul>
+</div>
+<div class="col-lg-3 col-md-3 col-sm-3 col-xs-12 ser-s ses">
+<ul>
+<li class="ser-svg"><svg width="41px" height="40px"><use xlink:href="#cust"></use></svg></li>
+<li class="ser-t">
+<h4>world wide shipping</h4>
+<p>Passage of Lorem Ipsum</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>]]>
+        </description>
+    </block_lang>
+    <block_lang>
+        <id_wbstaticblock>4</id_wbstaticblock>
+        <id_lang>1</id_lang>
+        <title>Wb Testimonials</title>
+        <description>
+             <![CDATA[<div class="test-ser">
+<div class="testi">
+<div class="test-p">
+<div class="test-bg">
+<div class="testimonial next-prevb row">
+<div id="owl-testi" class="owl-carousel owl-theme">
+<div class="item col-xs-12">
+<div class="testibgc">
+<div class="test-img">
+<div class="img-responsive center-block test1"></div>
+<div class="test-desc">
+<div class="des_namepost">mr. john deo</div>
+<div class="des_dev">designer</div>
+</div>
+</div>
+<div class="des_testimonial d-test">
+<p>Sed elit quam, iaculis the sed semper sit amet udin vitae nibh. at magna akal semper sema olatiup udin semperFusce commodo the molestie elit quam, iaculis or sed sema olatiup udin vitae lis sed sema olatiup udin vitae...</p>
+</div>
+</div>
+</div>
+<div class="item col-xs-12">
+<div class="testibgc">
+<div class="test-img">
+<div class="img-responsive center-block test2"></div>
+<div class="test-desc">
+<div class="des_namepost">mr. john deo</div>
+<div class="des_dev">designer</div>
+</div>
+</div>
+<div class="des_testimonial d-test">
+<p>Sed elit quam, iaculis the sed semper sit amet udin vitae nibh. at magna akal semper sema olatiup udin semperFusce commodo the molestie elit quam, iaculis or sed sema olatiup udin vitae lis sed sema olatiup udin vitae...</p>
+</div>
+</div>
+</div>
+<div class="item col-xs-12">
+<div class="testibgc">
+<div class="test-img">
+<div class="img-responsive center-block test3"></div>
+<div class="test-desc">
+<div class="des_namepost">mr. john deo</div>
+<div class="des_dev">designer</div>
+</div>
+</div>
+<div class="des_testimonial d-test">
+<p>Sed elit quam, iaculis the sed semper sit amet udin vitae nibh. at magna akal semper sema olatiup udin semperFusce commodo the molestie elit quam, iaculis or sed sema olatiup udin vitae lis sed sema olatiup udin vitae...</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>]]>
+        </description>
+    </block_lang>
+    <block_lang>
+        <id_wbstaticblock>5</id_wbstaticblock>
+        <id_lang>1</id_lang>
+        <title>Foot Tag</title>
+        <description>
+             <![CDATA[<div class="foot-tag">
+<ul class="header-link">
+<li class="d-inline-block"><a href="#">sofa</a></li>
+<li class="d-inline-block"><a href="#">chair</a></li>
+<li class="d-inline-block"><a href="#">dining table</a></li>
+<li class="d-inline-block"><a href="#">desk</a></li>
+<li class="d-inline-block"><a href="#">table</a></li>
+<li class="d-inline-block"><a href="#">livingroom</a></li>
+<li class="d-inline-block"><a href="#">bathroom</a></li>
+<li class="d-inline-block"><a href="#">badroom</a></li>
+<li class="d-inline-block"><a href="#">stool</a></li>
+<li class="d-inline-block"><a href="#">table lamp</a></li>
+<li class="d-inline-block"><a href="#">night stand</a></li>
+<li class="d-inline-block"><a href="#">pillow</a></li>
+<li class="d-inline-block"><a href="#">bar table</a></li>
+<li class="d-inline-block"><a href="#">tv</a></li>
+<li class="d-inline-block"><a href="#">radio</a></li>
+<li class="d-inline-block"><a href="#">clock</a></li>
+<li class="d-inline-block"><a href="#">computer desk</a></li>
+<li class="d-inline-block"><a href="#">chair </a></li>
+<li class="d-inline-block"><a href="#">stool</a></li>
+<li class="d-inline-block"><a href="#">bed</a></li>
+<li class="d-inline-block"><a href="#">stool</a></li>
+<li class="d-inline-block"><a href="#">table lamp</a></li>
+<li class="d-inline-block"><a href="#">night stand</a></li>
+<li class="d-inline-block"><a href="#">pillow</a></li>
+<li class="d-inline-block"><a href="#">bar table</a></li>
+<li class="d-inline-block"><a href="#">stool</a></li>
+<li class="d-inline-block"><a href="#">table lamp</a></li>
+<li class="d-inline-block"><a href="#">night stand</a></li>
+<li class="d-inline-block"><a href="#">pillow</a></li>
+<li class="d-inline-block"><a href="#">bar table</a></li>
+</ul>
+</div>
+<h5 class="c-info d-inline-block">download this app</h5>
+<ul class="list-inline list-unstyled foot-app d-inline-block">
+<li>
+<div class="fb1"></div>
+</li>
+<li>
+<div class="fb2"></div>
+</li>
+</ul>]]>
+        </description>
+    </block_lang>
+    <block_lang>
+        <id_wbstaticblock>6</id_wbstaticblock>
+        <id_lang>1</id_lang>
+        <title>Wb Payment</title>
+        <description>
+             <![CDATA[<ul class="list-inline list-unstyled foot-payment">
+<li><a href="#"><i class="fa fa-cc-mastercard"></i></a></li>
+<li><a href="#"><i class="fa fa-cc-visa"></i></a></li>
+<li><a href="#"><i class="fa fa-credit-card"></i></a></li>
+<li><a href="#"><i class="fa fa-cc-paypal"></i></a></li>
+</ul>]]>
+        </description>
+    </block_lang>
+
+<!-- block shop configuration -->
+    <block_shop>
+        <id_wbstaticblock>1</id_wbstaticblock>
+        <id_shop>1</id_shop>
+    </block_shop>
+    <block_shop>
+        <id_wbstaticblock>2</id_wbstaticblock>
+        <id_shop>1</id_shop>
+    </block_shop>
+    <block_shop>
+        <id_wbstaticblock>3</id_wbstaticblock>
+        <id_shop>1</id_shop>
+    </block_shop>
+    <block_shop>
+        <id_wbstaticblock>4</id_wbstaticblock>
+        <id_shop>1</id_shop>
+    </block_shop>
+    <block_shop>
+        <id_wbstaticblock>5</id_wbstaticblock>
+        <id_shop>1</id_shop>
+    </block_shop>
+    <block_shop>
+        <id_wbstaticblock>6</id_wbstaticblock>
+        <id_shop>1</id_shop>
+    </block_shop>
+</wb_static_blocks>

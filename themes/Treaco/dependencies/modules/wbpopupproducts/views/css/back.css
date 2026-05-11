@@ -1,0 +1,58 @@
+/*!
+ * @update 23.12.2020
+ * @author Webibazaar Template https://www.webibazaar.com
+ * @contact info@webibazaar.com 
+ * @license
+ * Copyright  2016-2020 Winter Infotech Team
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ *
+ */
+
+.bootstrap table.wbcustom-data-table{
+    width: 100%;
+    border: 1px solid #d3d8db;
+    background: #fff;
+}
+.wbcustom-data-table tr{
+    border-bottom: 1px solid #d3d8db;
+}
+.wbcustom-data-table tr td{
+    padding: 10px;
+    border-right: 1px solid #d3d8db;
+}
+.wbcustom-data-table tr:first-child td{
+    font-size: 16px;
+    color: #fff;
+    font-weight: 500;
+    text-transform: uppercase;
+    background: #1f3044;
+}
+.bootstrap table.wbcustom-data-table form {
+    display: inline-block;
+}
+
+.bootstrap table.wbcustom-data-table form button{
+    background: #f5f5f5;
+    margin: 0px 5px;
+    font-size: 13px;
+    border: 1px solid #e1e1e1;
+    padding: 5px 10px;
+    color: #222;
+    transition: 0.3s ease;
+}
+.bootstrap table.wbcustom-data-table form button:hover{
+    background: #ed2939;
+    border-color: #ed2939;
+    color: #fff;
+}
+.wbcustom-data-table td span.right{
+    color: #1bc21b;  
+}
+.wbcustom-data-table td span.wrong{
+    color: #ff0000; 
+}
+.bootstrap input[type="text"]#WBPOPUPPRODUCTS_OPACITY,.bootstrap input[type="text"]#WBPOPUPPRODUCTS_OPACITY_ON_HOVER,
+.bootstrap input[type="text"]#WBPOPUPPRODUCTS_DISPLAY_TIME,.bootstrap input[type="text"]#WBPOPUPPRODUCTS_DELAY_TIME_BETWEEN_NOTIFICATION,
+.bootstrap input[type="text"]#WBPOPUPPRODUCTS_UTM_URL_PARAMS{
+    width: auto
+}
