@@ -156,7 +156,7 @@ class AppinetOmnibus extends Module
 
     public function hookDisplayHeader()
     {
-        if (!$this->isEnabled()) {
+        if (!$this->isOmnibusEnabled()) {
             return;
         }
 
@@ -178,7 +178,7 @@ class AppinetOmnibus extends Module
      */
     public function hookActionGetProductPropertiesAfter(array $params)
     {
-        if (!$this->isEnabled() || !$this->isFrontOffice() || empty($params['product']['id_product'])) {
+        if (!$this->isOmnibusEnabled() || !$this->isFrontOffice() || empty($params['product']['id_product'])) {
             return;
         }
 
@@ -242,7 +242,7 @@ class AppinetOmnibus extends Module
 
     public function hookDisplayProductPriceBlock(array $params)
     {
-        if (!$this->isEnabled() || empty($params['product']) || empty($params['type'])) {
+        if (!$this->isOmnibusEnabled() || empty($params['product']) || empty($params['type'])) {
             return '';
         }
 
@@ -357,7 +357,7 @@ class AppinetOmnibus extends Module
         return $this->context->controller instanceof FrontController;
     }
 
-    private function isEnabled()
+    private function isOmnibusEnabled()
     {
         return (bool) Configuration::get(self::PREFIX . 'ENABLED');
     }
