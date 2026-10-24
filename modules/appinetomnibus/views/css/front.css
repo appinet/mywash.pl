@@ -1,0 +1,17 @@
+.appinet-omnibus {
+  display: block;
+  margin: 4px 0;
+  color: #7a7a7a;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.appinet-omnibus--product {
+  margin: 8px 0;
+  font-size: 0.8125rem;
+}
+
+.appinet-omnibus__price {
+  font-weight: 600;
+  white-space: nowrap;
+}
