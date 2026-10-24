@@ -1,17 +1,111 @@
+/* Lowest price before the reduction (Omnibus) */
+
 .appinet-omnibus {
-  display: block;
-  margin: 4px 0;
-  color: #7a7a7a;
-  font-size: 0.75rem;
-  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  box-sizing: border-box;
+  flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #e6e8eb;
+  border-radius: 10px;
+  background: #f7f8f9;
+  color: #5f6670;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
 }
+
+.appinet-omnibus__icon {
+  position: relative;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #9aa0a6;
+}
+
+.appinet-omnibus__icon::before {
+  content: "i";
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  font: 700 11px/16px Georgia, "Times New Roman", serif;
+  text-align: center;
+}
+
+.appinet-omnibus__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.appinet-omnibus__amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+}
+
+/* An amount with its tax word never breaks in the middle */
+.appinet-omnibus__amount {
+  white-space: nowrap;
+}
+
+.appinet-omnibus__amount strong {
+  color: #202328;
+  font-weight: 700;
+}
+
+/* Product page: full-width information bar */
 
 .appinet-omnibus--product {
-  margin: 8px 0;
-  font-size: 0.8125rem;
+  margin-top: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
 }
 
-.appinet-omnibus__price {
+/* Product lists: compact centred note under the prices */
+
+.appinet-omnibus--list {
+  justify-content: center;
+  gap: 0;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.appinet-omnibus--list .appinet-omnibus__icon {
+  display: none;
+}
+
+.appinet-omnibus--list .appinet-omnibus__text {
+  align-items: center;
+  gap: 1px;
+}
+
+.appinet-omnibus--list .appinet-omnibus__amounts {
+  justify-content: center;
+  gap: 0 8px;
+}
+
+.appinet-omnibus--list .appinet-omnibus__amount strong {
   font-weight: 600;
-  white-space: nowrap;
+}
+
+@media (max-width: 575px) {
+  .appinet-omnibus--product {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
 }

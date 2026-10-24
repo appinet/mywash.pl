@@ -7,6 +7,7 @@ if (!defined('_PS_VERSION_')) {
 require_once __DIR__ . '/classes/AppinetOmnibusPriceRepository.php';
 require_once __DIR__ . '/classes/AppinetOmnibusPriceRecorder.php';
 require_once __DIR__ . '/classes/AppinetOmnibusReferencePriceCalculator.php';
+require_once __DIR__ . '/classes/AppinetOmnibusTranslations.php';
 
 class AppinetOmnibus extends Module
 {
@@ -37,7 +38,13 @@ class AppinetOmnibus extends Module
         'FALLBACK',
         'RETENTION_DAYS',
         'LABEL',
+        'MOVE_PRODUCT_SELECTOR',
+        'MOVE_PRODUCT_POSITION',
+        'MOVE_LIST_SELECTOR',
+        'MOVE_LIST_POSITION',
     ];
+
+    private $movePositions = ['after', 'before', 'append', 'prepend'];
 
     private $stateKeys = [
         'CRON_TOKEN',
@@ -56,7 +63,7 @@ class AppinetOmnibus extends Module
     {
         $this->name = 'appinetomnibus';
         $this->tab = 'pricing_promotion';
-        $this->version = '1.0.0';
+        $this->version = '1.0.1';
         $this->author = 'appiNET';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -80,11 +87,7 @@ class AppinetOmnibus extends Module
             return false;
         }
 
-        $label = [];
-
-        foreach (Language::getLanguages(false) as $language) {
-            $label[(int) $language['id_lang']] = 'Najniższa cena z %days% dni przed obniżką: %price%';
-        }
+        $label = AppinetOmnibusTranslations::getLabelsForLanguages(Language::getLanguages(false));
 
         $defaults = [
             'ENABLED' => 1,
@@ -103,6 +106,10 @@ class AppinetOmnibus extends Module
             'REPLACE_REGULAR_PRICE' => 0,
             'FALLBACK' => AppinetOmnibusReferencePriceCalculator::FALLBACK_REGULAR,
             'RETENTION_DAYS' => 730,
+            'MOVE_PRODUCT_SELECTOR' => '',
+            'MOVE_PRODUCT_POSITION' => 'after',
+            'MOVE_LIST_SELECTOR' => '',
+            'MOVE_LIST_POSITION' => 'after',
             'LABEL' => $label,
         ];
 
@@ -168,6 +175,32 @@ class AppinetOmnibus extends Module
                 'priority' => 150,
             ]
         );
+
+        $placement = [];
+
+        foreach (['product' => 'PRODUCT', 'list' => 'LIST'] as $name => $key) {
+            $selector = (string) Configuration::get(self::PREFIX . 'MOVE_' . $key . '_SELECTOR');
+
+            if ($selector !== '') {
+                $placement[$name] = [
+                    'selector' => $selector,
+                    'position' => $this->allowed(Configuration::get(self::PREFIX . 'MOVE_' . $key . '_POSITION'), $this->movePositions, 'after'),
+                ];
+            }
+        }
+
+        // The script is only needed when the message is moved out of the price block.
+        if ($placement) {
+            Media::addJsDef(['appinetOmnibusPlacement' => $placement]);
+            $this->context->controller->registerJavascript(
+                'module-appinetomnibus',
+                'modules/' . $this->name . '/views/js/front.js',
+                [
+                    'position' => 'bottom',
+                    'priority' => 1400,
+                ]
+            );
+        }
     }
 
     /**
@@ -199,7 +232,14 @@ class AppinetOmnibus extends Module
 
         $currentTaxIncl = (float) $row['price'];
         $currentTaxExcl = (float) $row['price_tax_exc'];
-        $reference['has_reduction'] = $reference['price_tax_incl'] - $currentTaxIncl > 0.000001;
+        // The visitor's tax rate (rounded prices would give a slightly wrong ratio).
+        $visitorTaxRatio = isset($row['rate'])
+            ? 1 + (float) $row['rate'] / 100
+            : ($currentTaxExcl > 0 ? $currentTaxIncl / $currentTaxExcl : 1);
+        $reference = $this->adaptReferenceToVisitorTax($reference, $visitorTaxRatio);
+        // Compared without tax: the history holds prices for the default
+        // country, the visitor may see other or no VAT (EU VAT number, address).
+        $reference['has_reduction'] = round($reference['price_tax_excl'] - $currentTaxExcl, 2) >= 0.01;
         $row['appinet_omnibus'] = $reference;
 
         if (!Configuration::get(self::PREFIX . 'RECALCULATE_DISCOUNT')) {
@@ -215,7 +255,8 @@ class AppinetOmnibus extends Module
             $row['price_without_reduction_without_tax'] = $currentTaxExcl;
 
             if (is_array($row['specific_prices'])) {
-                $row['specific_prices']['reduction'] = 0;
+                // ProductLazyArray passes this value to DecimalNumber, which accepts strings only.
+                $row['specific_prices']['reduction'] = '0.000000';
             }
 
             return;
@@ -229,9 +270,10 @@ class AppinetOmnibus extends Module
             && $row['specific_prices']['reduction_type'] === 'percentage'
         ) {
             // Rounded down so the announced percentage is never exaggerated.
-            $row['specific_prices']['reduction'] = floor(
-                ($reference['price_tax_incl'] - $currentTaxIncl) / $reference['price_tax_incl'] * 10000
-            ) / 10000;
+            // Formatted as a string like the database value (DecimalNumber accepts strings only).
+            $row['specific_prices']['reduction'] = sprintf('%.6F', floor(
+                ($reference['price_tax_excl'] - $currentTaxExcl) / $reference['price_tax_excl'] * 10000
+            ) / 10000);
         }
 
         if (Configuration::get(self::PREFIX . 'REPLACE_REGULAR_PRICE')) {
@@ -240,19 +282,79 @@ class AppinetOmnibus extends Module
         }
     }
 
+    /**
+     * The history holds prices with the default country's VAT. When the
+     * visitor pays another VAT rate (or none), the gross reference price is
+     * recalculated from the net one with the visitor's tax ratio.
+     *
+     * @param float $visitorRatio 1 + visitor's tax rate / 100
+     */
+    private function adaptReferenceToVisitorTax(array $reference, $visitorRatio)
+    {
+        if ($visitorRatio <= 0 || $reference['price_tax_excl'] <= 0) {
+            return $reference;
+        }
+
+        $referenceRatio = $reference['price_tax_incl'] / $reference['price_tax_excl'];
+
+        // Small differences come from rounding to cents, not from another VAT rate.
+        if (abs($visitorRatio - $referenceRatio) > 0.005) {
+            $reference['price_tax_incl'] = Tools::ps_round(
+                $reference['price_tax_excl'] * $visitorRatio,
+                $this->context->getComputingPrecision()
+            );
+        }
+
+        return $reference;
+    }
+
     public function hookDisplayProductPriceBlock(array $params)
     {
-        if (!$this->isOmnibusEnabled() || empty($params['product']) || empty($params['type'])) {
+        $reason = '';
+        $output = $this->renderLowestPrice($params, $reason);
+
+        if ($this->isDebugRequest()) {
+            $output .= $this->renderDebug($params, $output !== '' ? 'wyświetlono' : $reason);
+        }
+
+        return $output;
+    }
+
+    /**
+     * @param string $reason set to the reason why nothing was rendered
+     */
+    private function renderLowestPrice(array $params, &$reason)
+    {
+        if (!$this->isOmnibusEnabled()) {
+            $reason = 'moduł wyłączony';
+
+            return '';
+        }
+
+        if (empty($params['product']) || empty($params['type'])) {
+            $reason = 'hook bez produktu lub typu';
+
             return '';
         }
 
         $product = $params['product'];
         $placement = $this->isMainProduct($product) ? 'PRODUCT' : 'LIST';
 
-        if (!Configuration::get(self::PREFIX . 'SHOW_' . $placement)
-            || $params['type'] !== Configuration::get(self::PREFIX . 'HOOK_' . $placement)
-            || empty($product['has_discount'])
-        ) {
+        if (!Configuration::get(self::PREFIX . 'SHOW_' . $placement)) {
+            $reason = 'wyłączone dla ' . $placement;
+
+            return '';
+        }
+
+        if ($params['type'] !== Configuration::get(self::PREFIX . 'HOOK_' . $placement)) {
+            $reason = 'inna pozycja (ustawiona: ' . Configuration::get(self::PREFIX . 'HOOK_' . $placement) . ')';
+
+            return '';
+        }
+
+        if (empty($product['has_discount'])) {
+            $reason = 'produkt bez obniżki (has_discount = false)';
+
             return '';
         }
 
@@ -265,16 +367,80 @@ class AppinetOmnibus extends Module
             );
         }
 
-        if (!$reference || (isset($reference['has_reduction']) && !$reference['has_reduction'])) {
+        if (!$reference) {
+            $reason = $this->explainMissingReference($product);
+
             return '';
         }
 
-        $this->smarty->assign('appinet_omnibus', [
+        if (isset($reference['has_reduction']) && !$reference['has_reduction']) {
+            $reason = 'cena nie jest niższa od najniższej ceny (' . $reference['price_tax_incl'] . ')';
+
+            return '';
+        }
+
+        $this->smarty->assign('appinet_omnibus', $this->buildViewData($reference) + [
             'placement' => strtolower($placement),
-            'text' => $this->buildLabel($reference),
         ]);
 
         return $this->fetch('module:' . $this->name . '/views/templates/hook/lowest-price.tpl');
+    }
+
+    /*
+     * Diagnostics: add ?omnibus_debug=<cron token> to a storefront URL to see,
+     * at every displayProductPriceBlock call, why the information is (not) shown.
+     */
+
+    private function isDebugRequest()
+    {
+        $token = Tools::getValue('omnibus_debug');
+
+        return is_string($token) && $token !== '' && $this->isValidCronToken($token);
+    }
+
+    private function renderDebug(array $params, $reason)
+    {
+        $product = isset($params['product']) ? $params['product'] : [];
+        $idProduct = isset($product['id_product']) ? (int) $product['id_product'] : 0;
+        $idProductAttribute = isset($product['id_product_attribute']) ? (int) $product['id_product_attribute'] : 0;
+
+        $info = sprintf(
+            'omnibus: type=%s, produkt=%d/%d, miejsce=%s, grupa=%d, waluta=%d - %s',
+            isset($params['type']) ? $params['type'] : '-',
+            $idProduct,
+            $idProductAttribute,
+            $idProduct && $this->isMainProduct($product) ? 'PRODUCT' : 'LIST',
+            (int) Group::getCurrent()->id,
+            (int) $this->context->currency->id,
+            $reason
+        );
+
+        return '<small style="display:block;margin:2px 0;padding:2px 4px;background:#fff3cd;color:#664d03;font:11px/1.3 monospace;">'
+            . htmlspecialchars($info, ENT_QUOTES, 'UTF-8') . '</small>';
+    }
+
+    private function explainMissingReference($product)
+    {
+        $idGroup = (int) Group::getCurrent()->id;
+
+        if (!in_array($idGroup, $this->getTrackedGroups(), true)) {
+            return 'grupa ' . $idGroup . ' nie jest śledzona (śledzone: ' . implode(',', $this->getTrackedGroups()) . ')';
+        }
+
+        $rows = $this->getRepository()->getHistory(
+            (int) $product['id_product'],
+            isset($product['id_product_attribute']) ? (int) $product['id_product_attribute'] : 0,
+            (int) $this->context->shop->id,
+            (int) $this->context->currency->id,
+            $idGroup
+        );
+
+        if (!$rows) {
+            return 'brak historii cen dla tej kombinacji/waluty/grupy - uruchom "Zapisz ceny teraz"';
+        }
+
+        return 'brak historii przed promocją, ustawienie "Gdy brak historii" = ' . Configuration::get(self::PREFIX . 'FALLBACK')
+            . ' (wierszy: ' . count($rows) . ')';
     }
 
     /**
@@ -308,7 +474,11 @@ class AppinetOmnibus extends Module
         return self::$referenceCache[$cacheKey];
     }
 
-    private function buildLabel(array $reference)
+    /**
+     * Message split around %price% and the amounts as separate items, so the
+     * template can lay them out (an amount never wraps in the middle).
+     */
+    private function buildViewData(array $reference)
     {
         $locale = $this->context->getCurrentLocale();
         $isoCode = $this->context->currency->iso_code;
@@ -317,26 +487,29 @@ class AppinetOmnibus extends Module
 
         switch (Configuration::get(self::PREFIX . 'DISPLAY_TAX')) {
             case 'incl':
-                $price = $taxIncl;
+                $amounts = [['price' => $taxIncl, 'tax' => '']];
                 break;
             case 'excl':
-                $price = $taxExcl;
+                $amounts = [['price' => $taxExcl, 'tax' => '']];
                 break;
             default:
-                $price = sprintf('%s %s (%s %s)', $taxExcl, $this->l('netto'), $taxIncl, $this->l('brutto'));
+                $taxWords = AppinetOmnibusTranslations::getTaxWords($this->context->language->iso_code);
+                $amounts = [
+                    ['price' => $taxExcl, 'tax' => $taxWords['excl']],
+                    ['price' => $taxIncl, 'tax' => $taxWords['incl']],
+                ];
         }
 
         $label = Configuration::get(self::PREFIX . 'LABEL', (int) $this->context->language->id)
-            ?: $this->l('Najniższa cena z %days% dni przed obniżką: %price%');
+            ?: AppinetOmnibusTranslations::getLabel($this->context->language->iso_code);
+        $label = str_replace('%days%', (int) Configuration::get(self::PREFIX . 'DAYS'), $label);
+        $parts = explode('%price%', $label, 2);
 
-        return str_replace(
-            ['%days%', '%price%'],
-            [
-                (int) Configuration::get(self::PREFIX . 'DAYS'),
-                '<span class="appinet-omnibus__price">' . htmlspecialchars($price, ENT_QUOTES, 'UTF-8') . '</span>',
-            ],
-            htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
-        );
+        return [
+            'label_before' => trim($parts[0]),
+            'label_after' => isset($parts[1]) ? trim($parts[1]) : '',
+            'amounts' => $amounts,
+        ];
     }
 
     private function isMainProduct($product)
@@ -723,6 +896,10 @@ class AppinetOmnibus extends Module
             ], AppinetOmnibusReferencePriceCalculator::FALLBACK_REGULAR),
             'RETENTION_DAYS' => $retention,
             'LABEL' => $label,
+            'MOVE_PRODUCT_SELECTOR' => $this->cleanSelector(Tools::getValue(self::PREFIX . 'MOVE_PRODUCT_SELECTOR')),
+            'MOVE_PRODUCT_POSITION' => $this->allowed(Tools::getValue(self::PREFIX . 'MOVE_PRODUCT_POSITION'), $this->movePositions, 'after'),
+            'MOVE_LIST_SELECTOR' => $this->cleanSelector(Tools::getValue(self::PREFIX . 'MOVE_LIST_SELECTOR')),
+            'MOVE_LIST_POSITION' => $this->allowed(Tools::getValue(self::PREFIX . 'MOVE_LIST_POSITION'), $this->movePositions, 'after'),
         ];
 
         foreach ($values as $key => $value) {
@@ -898,6 +1075,20 @@ class AppinetOmnibus extends Module
                         'class' => 'fixed-width-sm',
                         'desc' => $this->l('Historia jest dowodem dla UOKiK / Inspekcji Handlowej - zalecane min. 365 dni.'),
                     ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Karta produktu: przenieś komunikat do elementu'),
+                        'name' => self::PREFIX . 'MOVE_PRODUCT_SELECTOR',
+                        'desc' => $this->l('Selektor CSS, np. .elementor-element-d0a86a6. Puste = komunikat zostaje w bloku ceny.'),
+                    ],
+                    $this->positionSelect($this->l('Karta produktu: pozycja względem elementu'), 'MOVE_PRODUCT_POSITION'),
+                    [
+                        'type' => 'text',
+                        'label' => $this->l('Lista produktów: przenieś komunikat do elementu'),
+                        'name' => self::PREFIX . 'MOVE_LIST_SELECTOR',
+                        'desc' => $this->l('Selektor CSS szukany w obrębie miniatury produktu, np. .elementor-element-999b4a9. Puste = komunikat zostaje w bloku ceny.'),
+                    ],
+                    $this->positionSelect($this->l('Lista produktów: pozycja względem elementu'), 'MOVE_LIST_POSITION'),
                 ],
                 'submit' => ['title' => $this->l('Zapisz')],
             ],
@@ -1020,6 +1211,35 @@ class AppinetOmnibus extends Module
         }
 
         return $input;
+    }
+
+    private function positionSelect($label, $key)
+    {
+        return [
+            'type' => 'select',
+            'label' => $label,
+            'name' => self::PREFIX . $key,
+            'options' => [
+                'query' => [
+                    ['id' => 'after', 'name' => $this->l('Za elementem')],
+                    ['id' => 'before', 'name' => $this->l('Przed elementem')],
+                    ['id' => 'append', 'name' => $this->l('Na końcu elementu')],
+                    ['id' => 'prepend', 'name' => $this->l('Na początku elementu')],
+                ],
+                'id' => 'id',
+                'name' => 'name',
+            ],
+        ];
+    }
+
+    /**
+     * Keeps only characters used in CSS selectors (the value goes to JavaScript).
+     */
+    private function cleanSelector($selector)
+    {
+        $selector = trim((string) $selector);
+
+        return preg_match('/^[A-Za-z0-9_\-\.#\[\]=" >+~:(),*]{1,255}$/', $selector) ? $selector : '';
     }
 
     private function allowed($value, array $allowed, $default)
